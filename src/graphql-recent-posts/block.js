@@ -9,6 +9,31 @@ const { Component } = wp.element;
 const { select } = wp.data;
 
 /**
+ * With GraphQL, you can write fragments of your query so that you can couple your data
+ * dependencies with your components.
+ *
+ * So here, we have a fragment declaring what data is needed for our <Tags> component.
+ *
+ * If we ever need to evolve the Tags component to get additional data, we can do that right here
+ * in our Fragment!
+ */
+const TagsFragment = `
+fragment Tags on Post {
+	tags {
+		tagNodes: nodes {
+			id
+			name
+		}
+	}
+}
+`;
+
+/**
+ * Map over the TagNodes and output a <Tag> for each one
+ */
+const Tags = ({tagNodes}) => <div>{ tagNodes && tagNodes.map( tag => <Tag key={tag.id}>{tag.name}</Tag> ) }</div>;
+
+/**
  * This is the GraphQL Query that we can use to fetch the data in the same shape as the mock data
  * we hard-coded.
  */
@@ -29,14 +54,11 @@ const RECENT_POSTS_QUERY = `
 						avatarUrl: url
 					}
 				}
-				tags {
-					nodes {
-						name
-					}
-				}
+				...Tags
 			}
 		}
 	}
+	${TagsFragment}
 `;
 
 /**
@@ -46,12 +68,12 @@ const RECENT_POSTS_QUERY = `
  * Note: The styles to go with these components are enqueued in the wp-admin in `/src/init.php`
  */
 const PostCard = ({node}) => {
-	const { title, featuredImage: { sourceUrl }, author: { avatar: { avatarUrl }, firstName, lastName }, date, tagNodes } = node;
+	const { title, featuredImage: { sourceUrl }, author: { avatar: { avatarUrl }, firstName, lastName }, date, tags: { tagNodes = [] } } = node;
 	return(
 		<Card>
 			<h2>{ sourceUrl && <Avatar size="large" src={sourceUrl} />} {title}</h2>
 			<h4>{ avatarUrl && <Avatar size="small" shape="square" src={avatarUrl} />} By {firstName} {lastName} | {date}</h4>
-			<div>{ tagNodes && tagNodes.map( tag => <Tag>{tag.name}</Tag> ) }</div>
+			<Tags tagNodes={tagNodes} />
 		</Card>
 	);
 };
