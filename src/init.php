@@ -59,6 +59,15 @@ function graphql_gutenblock_example_cgb_editor_assets() {
 		true // Enqueue the script in the footer.
 	);
 
+	/**
+	 * Enqueue styles for the Ant Design component library
+	 */
+	wp_enqueue_style(
+		'antd',
+		'https://cdnjs.cloudflare.com/ajax/libs/antd/3.6.4/antd.min.css',
+		array( 'graphql_gutenblock_example-cgb-block-editor-css' )
+	);
+
 	// Styles.
 	wp_enqueue_style(
 		'graphql_gutenblock_example-cgb-block-editor-css', // Handle.
