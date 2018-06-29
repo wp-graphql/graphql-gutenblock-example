@@ -1,0 +1,20 @@
+{
+  "name": "graphql-gutenblock-example",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "cgb-scripts start",
+    "build": "cgb-scripts build",
+    "eject": "cgb-scripts eject"
+  },
+  "dependencies": {
+	"antd": "^3.6.4",
+	"cgb-scripts": "1.9.7",
+	"graphql": "^0.13.2",
+	"graphql-tag": "^2.9.2",
+	"react-dom": "^16.4.1"
+  },
+  "devDependencies": {
+	"react": "^16.4.1"
+  }
+}
