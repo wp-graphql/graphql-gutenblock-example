@@ -107,8 +107,28 @@ const RenderPosts = ({posts}) => {
  * using a GraphQL query and passing the data down to RenderPosts
  */
 class EditPosts extends Component {
+
+	/**
+	 * Setup the initial state for the component
+	 */
+	constructor( props ) {
+		super(...props);
+		this.state = {
+			/**
+			 * This is where we will store the posts that are returned from our GraphQL query.
+			 * For now, we'll just set the state with the posts from our hard-coded data
+			 */
+			posts: data.posts
+		};
+	}
+
 	render() {
-		return <RenderPosts posts={data.posts} />
+		/**
+		 * Pass the posts from state to the RenderPosts component.
+		 * Anytime the state changes, the changes will be passed down to the RenderPosts component
+		 * and React will re-render as needed. 
+		 */
+		return <RenderPosts posts={this.state.posts} />
 	}
 }
 
