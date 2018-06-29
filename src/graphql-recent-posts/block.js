@@ -8,66 +8,35 @@ const { registerBlockType } = wp.blocks;
 const { Component } = wp.element;
 
 /**
- * Hard-code some data that we can use to populate our Block components.
- *
- * We will replace this later with live data fetched from our WPGraphQL endpoint.
+ * This is the GraphQL Query that we can use to fetch the data in the same shape as the mock data
+ * we hard-coded.
  */
-const data = {
-	posts: {
-		nodes: [
-			{
-				id: 'post1',
-				title: 'JS for WP Conf',
-				date: 'Jun 29, 2018',
-				featuredImage: {
-					sourceUrl: 'https://placehold.it/100x100'
-				},
-				author: {
-					firstName: 'Jason',
-					lastName: 'Bahl',
-					avatar: {
-						avatarUrl: 'https://placehold.it/100x100'
-					}
-				},
-				tags: {
-					nodes: [
-						{
-							name: 'Example Tag 1'
-						},
-						{
-							name: 'Example Tag 2'
-						}
-					]
+const RECENT_POSTS_QUERY = `
+	query RecentPosts {
+		posts {
+			nodes {
+				id
+				title
+				date
+				featuredImage {
+					sourceUrl
 				}
-			},
-			{
-				id: 'post2',
-				title: 'Use GraphQL with WordPress',
-				date: 'Jun 29, 2018',
-				featuredImage: {
-					sourceUrl: 'https://placehold.it/100x100'
-				},
-				author: {
-					firstName: 'Jason',
-					lastName: 'Bahl',
-					avatar: {
-						avatarUrl: 'https://placehold.it/100x100'
+				author {
+					firstName
+					lastName
+					avatar(size: 50) {
+						avatarUrl: url
 					}
-				},
-				tags: {
-					nodes: [
-						{
-							name: 'WordPress + GraphQL'
-						},
-						{
-							name: 'JSforWP Conference'
-						}
-					]
+				}
+				tags {
+					nodes {
+						name
+					}
 				}
 			}
-		]
+		}
 	}
-};
+`;
 
 /**
  * This Component renders our actual Markup & Layout. This makes use of some handy components
@@ -79,8 +48,8 @@ const PostCard = ({node}) => {
 	const { title, featuredImage: { sourceUrl }, author: { avatar: { avatarUrl }, firstName, lastName }, date, tagNodes } = node;
 	return(
 		<Card>
-			<h2><Avatar size="large" src={sourceUrl} /> {title}</h2>
-			<h4><Avatar size="small" shape="square" src={avatarUrl} /> By {firstName} {lastName} | {date}</h4>
+			<h2>{ sourceUrl && <Avatar size="large" src={sourceUrl} />} {title}</h2>
+			<h4>{ avatarUrl && <Avatar size="small" shape="square" src={avatarUrl} />} By {firstName} {lastName} | {date}</h4>
 			<div>{ tagNodes && tagNodes.map( tag => <Tag>{tag.name}</Tag> ) }</div>
 		</Card>
 	);
@@ -113,22 +82,85 @@ class EditPosts extends Component {
 	 */
 	constructor( props ) {
 		super(...props);
+		console.log( props );
 		this.state = {
 			/**
-			 * This is where we will store the posts that are returned from our GraphQL query.
-			 * For now, we'll just set the state with the posts from our hard-coded data
+			 * The default state will now be null, and when the results of our fetched GraphQL
+			 * data get back, we'll update the state with the posts.
 			 */
-			posts: data.posts
+			posts: null
 		};
+	}
+
+	/**
+	 * Fetch the /graphql endpoint using the RECENT_POSTS_QUERY, then return the JSON from
+	 * the response.
+	 */
+	fetchPosts = async () => {
+
+		/**
+		 * NOTE: There are specific libraries like Apollo Client (highly recommend!), and others,
+		 * that make it easy to manage fetching data from GraphQL endpoints, but for the sake
+		 * of simplicity we're just using fetch.
+		 */
+		const response = await fetch( '/graphql', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				query: RECENT_POSTS_QUERY,
+			})
+		});
+
+		/**
+		 * Return the JSON
+		 */
+		return await response.json();
+	};
+
+	/**
+	 * When the component mounts in the DOM, this will get executed.
+	 */
+	componentDidMount() {
+
+		/**
+		 * Here, we fetch the posts using our GraphQL query, and when the response comes back
+		 * we set the state.posts with the posts from the response
+		 */
+		this.fetchPosts().then( response => {
+
+			/**
+			 * Set the state with the posts, if we received posts in the response
+			 */
+			if ( response.data && response.data.posts ) {
+				this.setState({
+					posts: response.data.posts
+				});
+			}
+		})
 	}
 
 	render() {
 		/**
 		 * Pass the posts from state to the RenderPosts component.
 		 * Anytime the state changes, the changes will be passed down to the RenderPosts component
-		 * and React will re-render as needed. 
+		 * and React will re-render as needed.
 		 */
-		return <RenderPosts posts={this.state.posts} />
+		const { posts } = this.state;
+
+		/**
+		 * If there are no posts, return a loading indicator
+		 */
+		if ( ! posts || ! posts.nodes ) {
+			return 'Loading...';
+		/**
+		 * If there are posts, map through the nodes and return the <PostCard> component
+		 * which will render the data from the GraphQL request
+		 */
+		} else {
+			return <RenderPosts posts={this.state.posts}/>
+		}
 	}
 }
 
