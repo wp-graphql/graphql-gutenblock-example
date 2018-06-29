@@ -14,6 +14,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Load PHP registration of blocks after plugins (such as Gutenberg) have been loaded.
+ */
+add_action( 'plugins_loaded', function() {
+	require_once( trailingslashit( dirname( __FILE__ ) ) . 'graphql-recent-posts/block.php' );
+});
+
+/**
  * Enqueue Gutenberg block assets for both frontend + backend.
  *
  * `wp-blocks`: includes block type registration and related functions.
