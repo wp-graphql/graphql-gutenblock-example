@@ -1,3 +1,12 @@
+# GraphQL Gutenblock Example
+
+This is an example showing how to use GraphQL (via the WPGraphQL plugin) to populate data in a
+Gutenberg block. 
+
+![](img/5-backend-use-query-fragment.png)
+
+# Create Guten Block
+
 This project was bootstrapped with [Create Guten Block](https://github.com/ahmadawais/create-guten-block).
 
 Below you will find some information on how to run scripts.
