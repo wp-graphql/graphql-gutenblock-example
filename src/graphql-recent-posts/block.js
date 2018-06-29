@@ -6,14 +6,15 @@ import { Card, Avatar, Tag } from 'antd'
  */
 const { registerBlockType } = wp.blocks;
 const { Component } = wp.element;
+const { select } = wp.data;
 
 /**
  * This is the GraphQL Query that we can use to fetch the data in the same shape as the mock data
  * we hard-coded.
  */
 const RECENT_POSTS_QUERY = `
-	query RecentPosts {
-		posts {
+	query RecentPosts ($id:Int) {
+		posts (where: {notIn: [$id] }) {
 			nodes {
 				id
 				title
@@ -99,6 +100,11 @@ class EditPosts extends Component {
 	fetchPosts = async () => {
 
 		/**
+		 * Get the ID of the post from Gutenberg's Data API
+		 */
+		const postId = select( 'core/editor' ).getEditedPostAttribute( 'id' );
+
+		/**
 		 * NOTE: There are specific libraries like Apollo Client (highly recommend!), and others,
 		 * that make it easy to manage fetching data from GraphQL endpoints, but for the sake
 		 * of simplicity we're just using fetch.
@@ -110,6 +116,9 @@ class EditPosts extends Component {
 			},
 			body: JSON.stringify({
 				query: RECENT_POSTS_QUERY,
+				variables: {
+					id: postId
+				}
 			})
 		});
 
